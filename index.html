@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Company Hotlines</title>
 <style>
+    
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
@@ -276,6 +277,79 @@
 
   .btn-call:hover { background: var(--success-bg); }
 
+  .hotline-card {
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .hotline-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  }
+
+  :root.dark-mode .hotline-card:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .member-card {
+    flex-direction: column;
+    text-align: left;
+    padding: 14px;
+  }
+
+  .member-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .member-name {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .member-role {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--success-bg);
+    color: var(--success);
+    font-weight: 500;
+  }
+
+  .member-extension {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  .back-btn {
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+    transition: background 0.12s;
+    margin-bottom: 1rem;
+  }
+
+  .back-btn:hover { background: var(--accent-bg); }
+
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .back-icon {
+    font-size: 18px;
+  }
+
   .empty {
     text-align: center;
     padding: 3rem 1rem;
@@ -328,13 +402,16 @@
 
 <header>
   <h1>
-    <span>📞 Hotlines</span>
+    <span id="headerTitle" class="header-title">
+      <span>📞 Hotlines</span>
+    </span>
     <div class="view-controls">
       <button class="view-btn active" id="listViewBtn" title="List view">≡</button>
       <button class="view-btn" id="gridViewBtn" title="Grid view">⊞</button>
       <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">🌙</button>
     </div>
   </h1>
+  <div id="backButtonContainer"></div>
   <div class="search-wrap">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input type="text" id="search" placeholder="Search by name or category…" oninput="render()">
@@ -348,6 +425,7 @@ let HOTLINES = [];
 const THEME_KEY = 'theme-preference';
 const VIEW_KEY = 'view-preference';
 let currentView = 'list';
+let selectedHotline = null;
 
 
 function initTheme() {
@@ -401,39 +479,95 @@ function initials(name) {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
+function selectHotline(index) {
+  selectedHotline = index;
+  updateHeader();
+  render();
+}
+
+function deselectHotline() {
+  selectedHotline = null;
+  updateHeader();
+  render();
+}
+
+function updateHeader() {
+  const headerTitle = document.getElementById('headerTitle');
+  const backContainer = document.getElementById('backButtonContainer');
+
+  if (selectedHotline !== null) {
+    const hotline = HOTLINES[selectedHotline];
+    headerTitle.innerHTML = `<span class="back-icon">👥</span><span>${hotline.name}</span>`;
+    backContainer.innerHTML = `<button class="back-btn" onclick="deselectHotline()">← Back to Hotlines</button>`;
+  } else {
+    headerTitle.innerHTML = '<span>📞 Hotlines</span>';
+    backContainer.innerHTML = '';
+  }
+}
+
 function render() {
   const q = document.getElementById('search').value.toLowerCase();
-  const filtered = q
-    ? HOTLINES.filter(h => h.name.toLowerCase().includes(q) || h.cat.toLowerCase().includes(q))
-    : HOTLINES;
-
   const el = document.getElementById('list');
 
-  if (!filtered.length) {
-    el.innerHTML = '<div class="empty">No results found.</div>';
-    return;
-  }
+  if (selectedHotline !== null) {
+    // Show members view
+    const hotline = HOTLINES[selectedHotline];
+    const filtered = hotline.members.filter(m => m.name.toLowerCase().includes(q) || m.role.toLowerCase().includes(q));
 
-  const viewClass = currentView === 'grid' ? 'grid-view' : 'list-view';
-  el.className = `list ${viewClass}`;
+    if (!filtered.length) {
+      el.innerHTML = '<div class="empty">No members found.</div>';
+      return;
+    }
 
-  el.innerHTML = filtered.map(h => `
-    <div class="card">
-      <div class="card-icon">${initials(h.name)}</div>
-      <div class="card-body">
-        <div class="card-name">${h.name}</div>
-        <span class="card-tag">${h.cat}</span>
-        <div class="card-number">${h.number}</div>
+    el.className = 'list list-view';
+    el.innerHTML = filtered.map((member, idx) => `
+      <div class="card member-card">
+        <div class="member-header">
+          <div class="card-icon">${initials(member.name)}</div>
+          <div class="card-body">
+            <span class="member-role">${member.role}</span>
+            <div class="member-name">${member.name}</div>
+            <div class="member-extension">${member.extension}</div>
+          </div>
+        </div>
       </div>
-     
-    </div>
-  `).join('');
+    `).join('');
+  } else {
+    // Show hotlines view
+    const filtered = q
+      ? HOTLINES.filter(h => h.name.toLowerCase().includes(q) || h.cat.toLowerCase().includes(q))
+      : HOTLINES;
+
+    if (!filtered.length) {
+      el.innerHTML = '<div class="empty">No results found.</div>';
+      return;
+    }
+
+    const viewClass = currentView === 'grid' ? 'grid-view' : 'list-view';
+    el.className = `list ${viewClass}`;
+
+    el.innerHTML = filtered.map((h, idx) => {
+      const actualIndex = HOTLINES.findIndex(hot => hot.name === h.name && hot.number === h.number);
+      return `
+        <div class="card hotline-card" onclick="selectHotline(${actualIndex})">
+          <div class="card-icon">${initials(h.name)}</div>
+          <div class="card-body">
+            <div class="card-name">${h.name}</div>
+            <span class="card-tag">${h.cat}</span>
+            <div class="card-number">${h.number}</div>
+            ${h.members ? `<div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">${h.members.length} member${h.members.length !== 1 ? 's' : ''}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 }
 
 
 initTheme();
 currentView = localStorage.getItem(VIEW_KEY) || 'list';
 updateViewButtons();
+updateHeader();
 
 // toggle buttons
 document.getElementById('themeToggle').addEventListener('click', toggleTheme);

@@ -1,6 +1,30 @@
 [
-  { "name": "PC Support", "cat": "IT", "number": "33011" },
-  { "name": "IT Apps", "cat": "IT", "number": "33638" },
-  { "name": "LQ Ladies", "cat": "TK", "number": "33451" }
- 
+  {
+    "name": "PC Support / Network Support",
+    "cat": "IT",
+    "number": "33011",
+    "members": [
+    
+    ]
+  },
+  {
+    "name": "IT Apps",
+    "cat": "IT",
+    "number": "33638",
+    "members": [
+      {
+        "name": "Keyan Andy Delgado",
+        "extension": "",
+        "role": "Application Dev"
+      }
+    ]
+  },
+  {
+    "name": "LQ Ladies",
+    "cat": "TK",
+    "number": "33451",
+    "members": [
+      { "name": "Mary Grace B. Manzano", "extension": "Timekeeper" ,"role": "Overall Timekeeper - Fruit Receiving Preparation and Cookroom" }
+    ]
+  }
 ]
