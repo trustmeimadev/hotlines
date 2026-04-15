@@ -349,7 +349,7 @@ const THEME_KEY = 'theme-preference';
 const VIEW_KEY = 'view-preference';
 let currentView = 'list';
 
-// Initialize theme on page load
+
 function initTheme() {
   const stored = localStorage.getItem(THEME_KEY);
   const isDark = stored 
@@ -425,17 +425,17 @@ function render() {
         <span class="card-tag">${h.cat}</span>
         <div class="card-number">${h.number}</div>
       </div>
-      <a class="btn-call" href="tel:${h.number.replace(/\s/g, '')}">Call</a>
+     
     </div>
   `).join('');
 }
 
-// Initialize theme and view
+
 initTheme();
 currentView = localStorage.getItem(VIEW_KEY) || 'list';
 updateViewButtons();
 
-// Setup toggle buttons
+// toggle buttons
 document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 document.getElementById('listViewBtn').addEventListener('click', () => setView('list'));
 document.getElementById('gridViewBtn').addEventListener('click', () => setView('grid'));
