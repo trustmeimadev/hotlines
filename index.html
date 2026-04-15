@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Hotlines</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f5f3;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --text: #1a1a1a;
+    --text-muted: #6b6b68;
+    --accent: #3c34b8;
+    --accent-bg: #eeedfe;
+    --accent-text: #3c34b8;
+    --success: #0f6e56;
+    --success-bg: #eaf3de;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  :root.dark-mode {
+    --bg: #1c1c1b;
+    --surface: #242423;
+    --border: rgba(255,255,255,0.1);
+    --text: #f0ede8;
+    --text-muted: #888780;
+    --accent-bg: #26215c;
+    --accent-text: #afa9ec;
+    --success-bg: #17340a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not(.dark-mode) {
+      color-scheme: light;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  header {
+    max-width: 640px;
+    margin: 0 auto 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .view-controls {
+    display: flex;
+    gap: 6px;
+  }
+
+  .view-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    transition: all 0.12s;
+  }
+
+  :root.dark-mode .view-btn {
+    background: rgba(36, 36, 35, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .view-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .view-btn:hover:not(.active) { opacity: 0.8; }
+
+  .theme-toggle {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text);
+    transition: background 0.12s;
+  }
+
+  :root.dark-mode .theme-toggle {
+    background: rgba(36, 36, 35, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .theme-toggle:hover { background: var(--accent-bg); }
+
+  .search-wrap { position: relative; }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  #search {
+    width: 100%;
+    padding: 10px 12px 10px 38px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  :root.dark-mode #search {
+    background: rgba(36, 36, 35, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--text-muted); }
+
+  .list {
+    max-width: 640px;
+    margin: 1.25rem auto 0;
+    display: grid;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .list.list-view {
+    grid-template-columns: 1fr;
+  }
+
+  .list.grid-view {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .list.grid-view .card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .list.grid-view .card-body {
+    width: 100%;
+  }
+
+  .list.grid-view .card-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .list.grid-view .card-number {
+    margin-top: 6px;
+  }
+
+  .list.grid-view .btn-call {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  :root.dark-mode .card {
+    background: rgba(36, 36, 35, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-text);
+  }
+
+  .card-body { flex: 1; min-width: 0; }
+
+  .card-name {
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--accent-bg);
+    color: var(--accent-text);
+    margin-top: 3px;
+    font-weight: 500;
+  }
+
+  .card-number {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .btn-call {
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--success);
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background 0.12s;
+    flex-shrink: 0;
+  }
+
+  .btn-call:hover { background: var(--success-bg); }
+
+  .empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    font-size: 15px;
+  }
+
+  footer {
+    max-width: 640px;
+    margin: 3rem auto 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 2rem 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  footer img {
+    height: 120px;
+    width: auto;
+    opacity: 0.8;
+  }
+
+  @media (max-width: 480px) {
+    .list.list-view .card { flex-wrap: wrap; }
+    .list.list-view .btn-call {
+      width: 100%;
+      text-align: center;
+      margin-top: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 0;
+    }
+    .list.grid-view {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>
+    <span>📞 Hotlines</span>
+    <div class="view-controls">
+      <button class="view-btn active" id="listViewBtn" title="List view">≡</button>
+      <button class="view-btn" id="gridViewBtn" title="Grid view">⊞</button>
+      <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">🌙</button>
+    </div>
+  </h1>
+  <div class="search-wrap">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search" placeholder="Search by name or category…" oninput="render()">
+  </div>
+</header>
+
+<div class="list" id="list"></div>
+
+<script>
+let HOTLINES = [];
+const THEME_KEY = 'theme-preference';
+const VIEW_KEY = 'view-preference';
+let currentView = 'list';
+
+// Initialize theme on page load
+function initTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  const isDark = stored 
+    ? stored === 'dark'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  setTheme(isDark ? 'dark' : 'light');
+}
+
+function setTheme(theme) {
+  const isDark = theme === 'dark';
+  document.documentElement.style.colorScheme = theme;
+  
+  if (isDark) {
+    document.documentElement.classList.add('dark-mode');
+  } else {
+    document.documentElement.classList.remove('dark-mode');
+  }
+  
+  localStorage.setItem(THEME_KEY, theme);
+  updateThemeButton();
+}
+
+function toggleTheme() {
+  const current = localStorage.getItem(THEME_KEY) || 
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  setTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+function updateThemeButton() {
+  const btn = document.getElementById('themeToggle');
+  const isDark = localStorage.getItem(THEME_KEY) === 'dark';
+  btn.textContent = isDark ? '☀️' : '🌙';
+}
+
+function setView(view) {
+  currentView = view;
+  localStorage.setItem(VIEW_KEY, view);
+  updateViewButtons();
+  render();
+}
+
+function updateViewButtons() {
+  document.getElementById('listViewBtn').classList.toggle('active', currentView === 'list');
+  document.getElementById('gridViewBtn').classList.toggle('active', currentView === 'grid');
+}
+
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const filtered = q
+    ? HOTLINES.filter(h => h.name.toLowerCase().includes(q) || h.cat.toLowerCase().includes(q))
+    : HOTLINES;
+
+  const el = document.getElementById('list');
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty">No results found.</div>';
+    return;
+  }
+
+  const viewClass = currentView === 'grid' ? 'grid-view' : 'list-view';
+  el.className = `list ${viewClass}`;
+
+  el.innerHTML = filtered.map(h => `
+    <div class="card">
+      <div class="card-icon">${initials(h.name)}</div>
+      <div class="card-body">
+        <div class="card-name">${h.name}</div>
+        <span class="card-tag">${h.cat}</span>
+        <div class="card-number">${h.number}</div>
+      </div>
+      <a class="btn-call" href="tel:${h.number.replace(/\s/g, '')}">Call</a>
+    </div>
+  `).join('');
+}
+
+// Initialize theme and view
+initTheme();
+currentView = localStorage.getItem(VIEW_KEY) || 'list';
+updateViewButtons();
+
+// Setup toggle buttons
+document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+document.getElementById('listViewBtn').addEventListener('click', () => setView('list'));
+document.getElementById('gridViewBtn').addEventListener('click', () => setView('grid'));
+
+// Fetch hotlines from JSON file
+fetch('hotlines.json')
+  .then(response => response.json())
+  .then(data => {
+    HOTLINES = data;
+    render();
+  })
+  .catch(error => console.error('Error loading hotlines:', error));
+</script>
+
+<footer>
+  <img src="img/dole-logo.png" alt="Dole Logo">
+  <p>Developed by Keyan Andy Delgado</p>
+</footer>
+
+</body>
+</html>
