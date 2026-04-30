@@ -26,5 +26,10 @@
     "members": [
       { "name": "Mary Grace B. Manzano", "extension": "Timekeeper" ,"role": "Overall Timekeeper - Fruit Receiving Preparation and Cookroom" }
     ]
+  },
+  {
+     "name": "PC Support",
+    "cat": "IT",
+    "number": "33111",
   }
 ]
